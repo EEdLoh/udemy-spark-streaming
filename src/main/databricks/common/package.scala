@@ -7,7 +7,7 @@ val carsSchema = StructType(Array(
   StructField("Cylinders", LongType),
   StructField("Displacement", DoubleType),
   StructField("Horsepower", LongType),
-  StructField("Wdight_in_lbs", LongType),
+  StructField("Weight_in_lbs", LongType),
   StructField("Acceleration", DoubleType),
   StructField("Year", StringType),
   StructField("Origin", StringType)
