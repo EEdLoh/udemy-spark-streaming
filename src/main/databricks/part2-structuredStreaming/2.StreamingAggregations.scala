@@ -61,7 +61,7 @@ lineCount.writeStream
 
 // COMMAND ----------
 
-// MAGIC %run ../common/common
+// MAGIC %run ../common/package
 
 // COMMAND ----------
 

@@ -59,7 +59,7 @@ val strgDir = s"wasbs://$strgCntnr@$strgAcct.blob.core.windows.net/"
 // COMMAND ----------
 
 import org.apache.spark.sql.types._
-  
+
 // reads an example dataset from dbfs as a stream because I don't have a reliable way to set a socket up on here
 val lines = spark.readStream
   .schema(
@@ -115,7 +115,7 @@ openLines.isStreaming // denotes that this is a streaming DF
 
 // COMMAND ----------
 
-// MAGIC %run ../common/common
+// MAGIC %run ../common/package
 
 // COMMAND ----------
 
