@@ -9,6 +9,9 @@
 
 val adlsAcct = dbutils.widgets.get("adls_acct")
 val adlsCntnr = dbutils.widgets.get("adls_cntnr")
+val adlsTemp = "abfss://%s@%s.dfs.core.windows.net/test-dev/%s"
+val adlsCars = adlsTemp.format(adlsCntnr, adlsAcct, "cars")
+spark.conf.set("adls.cars", adlsCars)
 
 val strgAcct = dbutils.widgets.get("storagename")
 val strgCntnr = dbutils.widgets.get("storagecntner")
@@ -28,7 +31,7 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 // MAGIC create or replace table cars (
 // MAGIC   value string
 // MAGIC ) using delta
-// MAGIC location 'abfss://${adls_cntnr}@${adls_acct}.dfs.core.windows.net/test-dev/cars'
+// MAGIC location '${adls.cars}'
 // MAGIC -- the ${} structure injects a variable, as it does in scala
 
 // COMMAND ----------
@@ -168,4 +171,18 @@ display(carsDS.groupByKey(car => car.Origin).count())
 
 // COMMAND ----------
 
+// MAGIC %md
+// MAGIC # Cleanup
 
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC set spark.databricks.delta.retentionDurationCheck.enabled = false;
+// MAGIC 
+// MAGIC delete from cars;
+// MAGIC vacuum cars RETAIN 0 HOURS;
+// MAGIC drop table cars;
+
+// COMMAND ----------
+
+dbutils.fs.rm(adlsCars, true)

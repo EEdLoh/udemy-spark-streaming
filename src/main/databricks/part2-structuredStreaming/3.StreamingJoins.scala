@@ -20,6 +20,11 @@ import org.apache.spark.sql.DataFrame
 
 val adlsAcct = dbutils.widgets.get("adls_acct")
 val adlsCntnr = dbutils.widgets.get("adls_cntnr")
+val adlsTemp = "abfss://%s@%s.dfs.core.windows.net/test-dev/%s"
+val adlsBands = adlsTemp.format(adlsCntnr, adlsAcct, "bands")
+spark.conf.set("adls.bands", adlsBands)
+val adlsGuitarists = adlsTemp.format(adlsCntnr, adlsAcct, "guitarists")
+spark.conf.set("adls.guitarists", adlsGuitarists)
 
 val strgAcct = dbutils.widgets.get("storagename")
 val strgCntnr = dbutils.widgets.get("storagecntner")
@@ -34,16 +39,13 @@ val strgDir = s"wasbs://$strgCntnr@$strgAcct.blob.core.windows.net/"
 // MAGIC create or replace table bands (
 // MAGIC   value string
 // MAGIC ) using delta
-// MAGIC location 'abfss://${adls_cntnr}@${adls_acct}.dfs.core.windows.net/test-dev/bands'
+// MAGIC location 'abfss://${adls_cntnr}@${adls_acct}.dfs.core.windows.net/test-dev/bands';
 // MAGIC -- the ${} structure injects a variable, as it does in scala
-
-// COMMAND ----------
-
-// MAGIC %sql -- Using a temp table and insert statements instead of a socket
+// MAGIC 
 // MAGIC create or replace table guitarists (
 // MAGIC   value string
 // MAGIC ) using delta
-// MAGIC location 'abfss://${adls_cntnr}@${adls_acct}.dfs.core.windows.net/test-dev/guitarists'
+// MAGIC location '${adls.guitarists}'
 // MAGIC -- the ${} structure injects a variable, as it does in scala
 
 // COMMAND ----------
@@ -226,3 +228,26 @@ display(streamStreamBandsGuitaristsDf)
 // MAGIC   * Right/left outer are supported but MUST have watermarks
 // MAGIC   * Full outer joins are not supported
 // MAGIC * Only Append output mode is supported
+
+// COMMAND ----------
+
+// MAGIC %md
+// MAGIC # Cleanup
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC set spark.databricks.delta.retentionDurationCheck.enabled = false;
+// MAGIC 
+// MAGIC delete from bands;
+// MAGIC vacuum bands RETAIN 0 HOURS;
+// MAGIC drop table bands;
+// MAGIC 
+// MAGIC delete from guitarists;
+// MAGIC vacuum guitarists RETAIN 0 HOURS;
+// MAGIC drop table guitarists;
+
+// COMMAND ----------
+
+dbutils.fs.rm(adlsBands, true)
+dbutils.fs.rm(adlsGuitarists, true)
